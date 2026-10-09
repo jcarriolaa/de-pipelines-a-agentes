@@ -1,0 +1,5 @@
+# Pineado: lo que se probó el jueves es lo que corre el sábado.
+claude-agent-sdk==0.2.165   # trae el binario nativo de Claude Code (no necesita Node)
+bedrock-agentcore==1.24.1   # contrato HTTP de AgentCore Runtime (/invocations, /ping)
+boto3==1.43.110
+pytest==8.4.2               # el agente corre los tests del repo antes de proponer el PR

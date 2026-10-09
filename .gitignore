@@ -1,3 +1,11 @@
 __pycache__/
 .pytest_cache/
 .venv/
+
+# infra del agente: estado y valores locales (no se versionan)
+infra/.terraform/
+infra/.build/
+infra/terraform.tfstate*
+infra/terraform.tfvars
+infra/*.tfplan
+infra/.image_tag

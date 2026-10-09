@@ -1,0 +1,26 @@
+{
+  "version": "0",
+  "id": "4a7c1d2e-0000-4b1f-9c3e-000000000000",
+  "detail-type": "Step Functions Execution Status Change",
+  "source": "aws.states",
+  "account": "123456789012",
+  "time": "2026-10-10T16:05:42Z",
+  "region": "us-east-1",
+  "resources": [
+    "arn:aws:states:us-east-1:123456789012:execution:evtpipe-dev-pipeline:demo-20261010-160512"
+  ],
+  "detail": {
+    "executionArn": "arn:aws:states:us-east-1:123456789012:execution:evtpipe-dev-pipeline:demo-20261010-160512",
+    "stateMachineArn": "arn:aws:states:us-east-1:123456789012:stateMachine:evtpipe-dev-pipeline",
+    "name": "demo-20261010-160512",
+    "status": "FAILED",
+    "startDate": 1791648312000,
+    "stopDate": 1791648342000,
+    "input": "{\"run_id\": null, \"date_range\": null}",
+    "output": null,
+    "inputDetails": { "included": true },
+    "outputDetails": null,
+    "error": "PipelineExecutionFailed",
+    "cause": "A pipeline stage failed after exhausting its retries. See the alert message and the execution history."
+  }
+}

@@ -27,8 +27,11 @@ El agente propone; tú decides.
 | `src/eventos/validacion.py` | Valida un lote: normaliza → valida → tokeniza PII → quality gate. |
 | `tests/` | Tests con `pytest`; el CI los corre en cada PR. |
 | `data/` | Un lote sano y el mismo lote con el schema roto. |
+| `agent/` | El agente: `main.py` (runtime + loop con Claude Agent SDK), `runbook.md` (sus instrucciones) y `Dockerfile` (imagen arm64 para AgentCore). |
+| `infra/` | Terraform: regla de EventBridge, Lambda dispatcher, AgentCore Runtime (y Fargate de respaldo), IAM, SNS y secretos. |
+| `demo/` | Scripts de la demo: romper el contrato, correr el pipeline, ver al agente en vivo. |
 
-## Probarlo
+## Probar el contrato y la validación
 
 ```bash
 python -m pip install pytest
@@ -36,6 +39,22 @@ python -m pytest -q
 PYTHONPATH=src python -m eventos.validacion data/crm_events_ok.jsonl            # OK: 5 de 5 válidos
 PYTHONPATH=src python -m eventos.validacion data/crm_events_schema_break.jsonl  # FALLA: quarantine rate 100.00% ...
 ```
+
+## Correr la demo
+
+Requiere un pipeline `evtpipe-dev` (Step Functions + S3) desplegado en la cuenta, Docker y Terraform.
+
+```bash
+make login                 # aws sso login
+make check-bedrock         # ¿el modelo está habilitado en Bedrock?
+make infra-ecr && make push && make apply   # infra del agente (pide notification_email en infra/terraform.tfvars)
+make break                 # el CRM "renombra" customer_id → customerId y el archivo cae en bronze
+make run                   # corre el pipeline: FAILED en segundos
+make watch                 # (otra terminal) los pasos del agente en vivo
+```
+
+El agente diagnostica, abre un draft PR en este repo y manda el correo. Para el PR, el token de GitHub va en
+el secreto `demo-agent/github-token` (fine-grained, solo este repo, Contents + Pull requests).
 
 ## Guardrails del agente
 
