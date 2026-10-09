@@ -34,3 +34,36 @@ def test_falta_campo_requerido_tumba_el_gate():
 def test_campo_inesperado_se_reporta():
     reporte = validar_lote([evento(extra="x")], CONTRATO)
     assert reporte.campos_inesperados == ["extra"]
+
+
+# --- Tests del renombrado customerId → customer_id ---
+
+def test_customerId_renombrado_a_customer_id_y_pasa_validacion():
+    """Un registro con customerId (camelCase) debe aceptarse igual que customer_id."""
+    registro = evento(customer_id=..., customerId="cust-000012")
+    reporte = validar_lote([registro], CONTRATO)
+    assert reporte.rechazados == 0
+    assert len(reporte.validos) == 1
+
+
+def test_customerId_queda_tokenizado_como_customer_id():
+    """Tras el renombre, el campo PII debe salir tokenizado (no en claro)."""
+    registro = evento(customer_id=..., customerId="cust-000012")
+    reporte = validar_lote([registro], CONTRATO)
+    salida = reporte.validos[0]
+    assert "customer_id" in salida
+    assert salida["customer_id"] != "cust-000012", "El PII no fue tokenizado"
+    assert "customerId" not in salida, "El alias no debería aparecer en la salida"
+
+
+def test_ambos_nombres_gana_el_del_contrato():
+    """Si llegan customer_id y customerId a la vez, el del contrato no se sobreescribe."""
+    registro = evento(customer_id="cust-000099", customerId="cust-000012")
+    reporte = validar_lote([registro], CONTRATO)
+    assert reporte.rechazados == 0
+    salida = reporte.validos[0]
+    # El valor tokenizado corresponde a cust-000099 (el nombre del contrato gana)
+    import hashlib, hmac as _hmac
+    esperado = _hmac.new(b"demo", b"cust-000099", hashlib.sha256).hexdigest()[:16]
+    assert salida["customer_id"] == esperado
+    assert "customerId" not in salida
