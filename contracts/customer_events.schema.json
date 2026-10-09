@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "customer_events",
+  "description": "Contrato de los eventos de clientes que llegan del CRM. Lo que no cumple, va a cuarentena.",
+  "type": "object",
+  "required": ["event_id", "source_system", "customer_id", "event_type", "event_timestamp"],
+  "properties": {
+    "event_id": { "type": "string", "pattern": "^evt-[0-9a-f]{12}$" },
+    "source_system": { "type": "string", "enum": ["crm", "billing"] },
+    "customer_id": { "type": "string", "pattern": "^cust-[0-9]{3,10}$" },
+    "event_type": { "type": "string" },
+    "event_timestamp": { "type": "string" },
+    "amount": { "type": ["number", "null"] },
+    "currency": { "type": ["string", "null"] }
+  },
+  "x-pipeline": {
+    "version": "1.0.0",
+    "owner": "data-platform",
+    "pii": ["customer_id"],
+    "max_error_rate": 0.05
+  }
+}

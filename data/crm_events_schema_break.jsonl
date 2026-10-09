@@ -1,0 +1,5 @@
+{"event_id": "evt-9020ff9ab5c0", "source_system": "crm", "event_type": "payment_refunded", "event_timestamp": "2026-10-10T10:58:12Z", "amount": 12.5, "currency": "USD", "customerId": "cust-000001"}
+{"event_id": "evt-9020ff9ab5c1", "source_system": "crm", "event_type": "payment_refunded", "event_timestamp": "2026-10-10T10:58:12Z", "amount": 12.5, "currency": "USD", "customerId": "cust-000002"}
+{"event_id": "evt-9020ff9ab5c2", "source_system": "crm", "event_type": "payment_refunded", "event_timestamp": "2026-10-10T10:58:12Z", "amount": 12.5, "currency": "USD", "customerId": "cust-000003"}
+{"event_id": "evt-9020ff9ab5c3", "source_system": "crm", "event_type": "payment_refunded", "event_timestamp": "2026-10-10T10:58:12Z", "amount": 12.5, "currency": "USD", "customerId": "cust-000004"}
+{"event_id": "evt-9020ff9ab5c4", "source_system": "crm", "event_type": "payment_refunded", "event_timestamp": "2026-10-10T10:58:12Z", "amount": 12.5, "currency": "USD", "customerId": "cust-000005"}
