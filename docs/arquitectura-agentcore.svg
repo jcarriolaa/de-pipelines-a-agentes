@@ -1,0 +1,151 @@
+<svg viewBox="0 0 1240 660" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Arquitectura de la demo: una falla del pipeline dispara al agente, que corre dentro de una microVM de Amazon Bedrock AgentCore Runtime, razona con Claude en Bedrock, lee AWS en solo lectura y propone el arreglo; el runtime publica el correo y el draft PR" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif">
+  <defs>
+    <marker id="ac-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8a9096"/>
+    </marker>
+  </defs>
+  <rect width="1240" height="660" fill="#ffffff"/>
+
+  <!-- ============ 1 · DISPARO ============ -->
+  <text x="40" y="34" fill="#14505e" font-size="13" font-weight="700" letter-spacing="1.8">1 · DISPARO</text>
+  <g fill="#fff" stroke="#14505e" stroke-width="2.2">
+    <rect x="40" y="52" width="210" height="60" rx="3"/>
+    <rect x="40" y="152" width="210" height="60" rx="3"/>
+    <rect x="40" y="252" width="210" height="60" rx="3"/>
+  </g>
+  <g text-anchor="middle" fill="#14505e" font-size="15">
+    <text x="145" y="78">Step Functions</text>
+    <text x="145" y="178">EventBridge</text>
+    <text x="145" y="278">Lambda dispatcher</text>
+  </g>
+  <g text-anchor="middle" fill="#5e6469" font-size="13">
+    <text x="145" y="98">ejecución FAILED</text>
+    <text x="145" y="198">regla: status = FAILED</text>
+    <text x="145" y="298">~30 líneas</text>
+  </g>
+  <g fill="none" stroke="#8a9096" stroke-width="2" marker-end="url(#ac-arrow)">
+    <path d="M145 112 v36"/>
+    <path d="M145 212 v36"/>
+    <path d="M250 282 h96"/>
+  </g>
+  <g fill="#5e6469" font-size="12.5">
+    <text x="258" y="306">Invoke</text>
+    <text x="258" y="322">AgentRuntime</text>
+    <text x="258" y="338">+ el evento</text>
+  </g>
+
+  <!-- ============ AGENTCORE RUNTIME ============ -->
+  <rect x="350" y="20" width="520" height="560" rx="4" fill="#eef3f4" stroke="#14505e" stroke-width="2.4" stroke-dasharray="8 6"/>
+  <rect x="350" y="20" width="8" height="560" fill="#ff9900"/>
+  <text x="378" y="48" fill="#14505e" font-size="13" font-weight="700" letter-spacing="1.8">2 · AMAZON BEDROCK AGENTCORE RUNTIME</text>
+  <text x="378" y="68" fill="#5e6469" font-size="13">gestionado: sin servidores, se paga por sesión</text>
+
+  <!-- microVM -->
+  <rect x="378" y="84" width="466" height="352" rx="4" fill="#fff" stroke="#14505e" stroke-width="2"/>
+  <text x="396" y="108" fill="#14505e" font-size="14" font-weight="700">microVM aislada · una por sesión</text>
+  <text x="826" y="108" text-anchor="end" fill="#5e6469" font-size="13">hasta 8 h · 2 vCPU / 8 GB</text>
+
+  <!-- contenedor -->
+  <rect x="396" y="120" width="430" height="300" rx="3" fill="#eef3f4" stroke="#8a9096" stroke-width="1.5"/>
+  <text x="412" y="142" fill="#5e6469" font-size="13">contenedor arm64 · imagen desde Amazon ECR</text>
+
+  <g fill="#fff" stroke="#14505e" stroke-width="2">
+    <rect x="412" y="152" width="398" height="44" rx="3"/>
+    <rect x="412" y="208" width="398" height="56" rx="3"/>
+    <rect x="412" y="276" width="398" height="78" rx="3"/>
+  </g>
+  <text x="426" y="179" fill="#14505e" font-size="14"><tspan font-weight="700">HTTP :8080</tspan>  POST /invocations · GET /ping</text>
+  <text x="426" y="231" fill="#14505e" font-size="14" font-weight="700">main.py · runtime determinístico</text>
+  <text x="426" y="251" fill="#5e6469" font-size="13">clona el repo · valida el diff · commit + PR · correo</text>
+  <text x="426" y="300" fill="#14505e" font-size="14" font-weight="700">Claude Agent SDK → Claude Code</text>
+  <text x="426" y="320" fill="#5e6469" font-size="13">el loop del agente, guiado por runbook.md:</text>
+  <text x="426" y="340" fill="#5e6469" font-size="13">percibir → razonar → actuar → verificar</text>
+  <g fill="none" stroke="#8a9096" stroke-width="1.6" marker-end="url(#ac-arrow)">
+    <path d="M611 196 v10"/>
+    <path d="M611 264 v10"/>
+  </g>
+
+  <!-- candado 1 -->
+  <g font-size="12.5">
+    <rect x="412" y="366" width="134" height="40" rx="3" fill="#fff4e5" stroke="#ff9900" stroke-width="1.6"/>
+    <rect x="554" y="366" width="126" height="40" rx="3" fill="#fff4e5" stroke="#ff9900" stroke-width="1.6"/>
+    <rect x="688" y="366" width="122" height="40" rx="3" fill="#fff4e5" stroke="#ff9900" stroke-width="1.6"/>
+    <g text-anchor="middle" fill="#14505e">
+      <text x="479" y="383" font-weight="700">dontAsk</text>
+      <text x="479" y="399">+ lista cerrada</text>
+      <text x="617" y="383" font-weight="700">max_turns</text>
+      <text x="617" y="399">tope de turnos</text>
+      <text x="749" y="383" font-weight="700">max_budget</text>
+      <text x="749" y="399">$1 por corrida</text>
+    </g>
+  </g>
+
+  <!-- identidad + observabilidad -->
+  <g fill="#fff" stroke="#14505e" stroke-width="2">
+    <rect x="378" y="452" width="228" height="108" rx="3"/>
+    <rect x="616" y="452" width="228" height="108" rx="3"/>
+  </g>
+  <rect x="378" y="452" width="228" height="108" rx="3" fill="none" stroke="#ff9900" stroke-width="2.4"/>
+  <text x="392" y="476" fill="#14505e" font-size="14" font-weight="700">Identidad: rol IAM</text>
+  <text x="392" y="497" fill="#5e6469" font-size="13">solo lectura del pipeline</text>
+  <text x="392" y="516" fill="#5e6469" font-size="13">+ Deny explícito a escribir</text>
+  <text x="392" y="535" fill="#5e6469" font-size="13">el modelo no puede saltarlo</text>
+  <text x="630" y="476" fill="#14505e" font-size="14" font-weight="700">Observabilidad</text>
+  <text x="630" y="497" fill="#5e6469" font-size="13">cada paso → CloudWatch Logs</text>
+  <text x="630" y="516" fill="#5e6469" font-size="13">trazas → X-Ray</text>
+  <text x="630" y="535" fill="#5e6469" font-size="13">costo y turnos por corrida</text>
+  <g fill="none" stroke="#8a9096" stroke-width="1.6" stroke-dasharray="4 4">
+    <path d="M492 436 v14"/>
+    <path d="M730 436 v14"/>
+  </g>
+
+  <!-- ============ 3 · LO QUE TOCA EL AGENTE ============ -->
+  <text x="924" y="34" fill="#14505e" font-size="13" font-weight="700" letter-spacing="1.8">3 · LO QUE TOCA</text>
+
+  <g fill="#fff" stroke="#14505e" stroke-width="2.2">
+    <rect x="924" y="52" width="276" height="62" rx="3"/>
+    <rect x="924" y="134" width="276" height="96" rx="3"/>
+    <rect x="924" y="250" width="276" height="74" rx="3"/>
+  </g>
+  <text x="938" y="74" fill="#14505e" font-size="12" font-weight="700" letter-spacing="1.4">RAZONA</text>
+  <text x="938" y="98" fill="#14505e" font-size="15">Amazon Bedrock · Claude Sonnet 4.6</text>
+  <text x="938" y="156" fill="#14505e" font-size="12" font-weight="700" letter-spacing="1.4">LEE · SOLO LECTURA</text>
+  <text x="938" y="178" fill="#14505e" font-size="15">Step Functions · historial</text>
+  <text x="938" y="199" fill="#14505e" font-size="15">CloudWatch Logs · la Lambda</text>
+  <text x="938" y="220" fill="#14505e" font-size="15">S3 · manifest y cuarentena</text>
+  <text x="938" y="272" fill="#14505e" font-size="12" font-weight="700" letter-spacing="1.4">PROPONE</text>
+  <text x="938" y="294" fill="#14505e" font-size="15">repo clonado: contrato + código</text>
+  <text x="938" y="314" fill="#5e6469" font-size="13">edita contracts/ src/ tests/ · corre pytest</text>
+
+  <!-- flechas del loop del agente hacia afuera -->
+  <g fill="none" stroke="#8a9096" stroke-width="2" marker-end="url(#ac-arrow)">
+    <path d="M810 298 H882 V83 H920"/>
+    <path d="M810 314 H894 V182 H920"/>
+    <path d="M810 330 H906 V287 H920"/>
+  </g>
+
+  <!-- ============ 4 · PUBLICA ============ -->
+  <text x="924" y="372" fill="#14505e" font-size="13" font-weight="700" letter-spacing="1.8">4 · PUBLICA EL RUNTIME</text>
+  <text x="924" y="392" fill="#5e6469" font-size="13">no el modelo</text>
+  <g fill="#fff" stroke="#14505e" stroke-width="2.2">
+    <rect x="924" y="406" width="276" height="62" rx="3"/>
+    <rect x="924" y="486" width="276" height="74" rx="3"/>
+  </g>
+  <text x="938" y="432" fill="#14505e" font-size="15">Amazon SNS → correo</text>
+  <text x="938" y="453" fill="#5e6469" font-size="13">causa · evidencia · fix propuesto</text>
+  <text x="938" y="512" fill="#14505e" font-size="15">GitHub → draft PR</text>
+  <text x="938" y="533" fill="#5e6469" font-size="13">token en Secrets Manager</text>
+  <text x="938" y="550" fill="#5e6469" font-size="13">el merge lo decide una persona</text>
+  <g fill="none" stroke="#8a9096" stroke-width="2" marker-end="url(#ac-arrow)">
+    <path d="M810 236 H876 V437 H920"/>
+    <path d="M876 437 V523 H920"/>
+  </g>
+
+  <!-- ============ PIE ============ -->
+  <line x1="40" y1="604" x2="1200" y2="604" stroke="#e2ded7" stroke-width="1.5"/>
+  <rect x="40" y="620" width="14" height="14" rx="2" fill="#fff4e5" stroke="#ff9900" stroke-width="1.6"/>
+  <text x="62" y="632" fill="#5e6469" font-size="13">candado 1 · depende del modelo</text>
+  <rect x="290" y="620" width="14" height="14" rx="2" fill="#fff" stroke="#ff9900" stroke-width="2.4"/>
+  <text x="312" y="632" fill="#5e6469" font-size="13">candado 2 · IAM, no depende del modelo</text>
+  <text x="1200" y="632" text-anchor="end" fill="#14505e" font-size="14" font-weight="700">El agente propone. Tú decides.</text>
+</svg>

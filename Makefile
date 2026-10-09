@@ -1,5 +1,5 @@
 # Demo "De pipelines a agentes": agente de monitoreo para evtpipe-dev (AWS Community Day GT 2026).
-# Orden del viernes: login -> check-bedrock -> infra-ecr -> push -> apply -> confirmar email -> e2e.
+# Paso a paso completo: docs/GUIA-PASO-A-PASO.md
 
 AWS_PROFILE ?= personal
 AWS_REGION  ?= us-east-1
@@ -14,10 +14,10 @@ export AWS_PROFILE AWS_REGION
 help: ## Esta ayuda
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-24s %s\n", $$1, $$2}'
 
-login: ## SSO del perfil personal
+login: ## aws sso login con AWS_PROFILE (default: personal)
 	aws sso login --profile $(AWS_PROFILE)
 
-check-bedrock: ## PASO 1 DEL VIERNES: ¿el inference profile de Sonnet existe en la cuenta?
+check-bedrock: ## ¿El modelo está habilitado en Bedrock? (requiere AWS CLI v2 reciente)
 	aws bedrock list-inference-profiles --region $(AWS_REGION) \
 		--query "inferenceProfileSummaries[?contains(inferenceProfileId, 'claude-sonnet')].[inferenceProfileId,status]" --output table
 
@@ -84,5 +84,5 @@ run: ## Corre el pipeline y sigue su estado
 watch: ## Logs del agente en vivo
 	./demo/watch_agent.sh
 
-destroy: ## Destruye SOLO el addon (después del sábado)
+destroy: ## Destruye la infra del agente (no toca el pipeline)
 	$(TF) destroy -var="image_tag=$$(cat infra/.image_tag)"

@@ -6,6 +6,8 @@ Demo de la charla **"De pipelines a agentes: Data Engineering autónomo con Clau
 Este repo contiene el **contrato de datos y la validación** del pipeline de la demo, en su versión
 mínima. Es el código sobre el que el agente de monitoreo propone arreglos como *draft PR*.
 
+> 📘 **¿Quieres montarlo tú?** Sigue la [guía paso a paso](docs/GUIA-PASO-A-PASO.md).
+
 ## La historia
 
 ```
