@@ -11,5 +11,6 @@ infra/*.tfplan
 infra/.image_tag
 infra/.flujo
 
-# configuración local de herramientas (no se versiona)
-.claude/
+# configuración local de herramientas (no se versiona); los subagentes sí
+.claude/*
+!.claude/agents/
