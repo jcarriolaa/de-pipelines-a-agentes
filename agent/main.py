@@ -132,6 +132,15 @@ def sin_atribucion(texto: str) -> str:
     return "\n".join(lineas).strip()
 
 
+# El PR es PÚBLICO y la evidencia sale de AWS: cualquier ARN o número de cuenta
+# (12 dígitos) se reemplaza antes de publicar. El correo, que es privado, no se toca.
+_ACCOUNT_ID = re.compile(r"(?<![0-9])[0-9]{12}(?![0-9])")
+
+
+def sin_cuenta(texto: str) -> str:
+    return _ACCOUNT_ID.sub("<cuenta>", texto)
+
+
 def limpiar(diagnosis: dict[str, Any]) -> dict[str, Any]:
     limpio = {k: sin_atribucion(v) if isinstance(v, str) else v for k, v in diagnosis.items()}
     if isinstance(limpio.get("evidencia"), list):
@@ -314,7 +323,8 @@ def open_pull_request(repo: Path, branch: str, diagnosis: dict[str, Any], run: d
         "_El CI corre los tests de este PR; el merge lo decide una persona._" if not SKIP_CI
         else "_Commit con `[skip ci]`: el CI no corre hasta que una persona lo active._",
     ])
-    pr = github_api("pulls", token, {"title": title, "head": branch, "base": "main", "body": body, "draft": True})
+    pr = github_api("pulls", token, {"title": sin_cuenta(title), "head": branch, "base": "main",
+                                     "body": sin_cuenta(body), "draft": True})
     log("pr_opened", url=pr.get("html_url"), number=pr.get("number"), files=files)
     return {"status": "abierto", "url": pr.get("html_url"), "files": files}
 
