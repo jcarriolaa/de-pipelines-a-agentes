@@ -14,9 +14,12 @@
     "currency": { "type": ["string", "null"] }
   },
   "x-pipeline": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "owner": "data-platform",
     "pii": ["customer_id"],
-    "max_error_rate": 0.05
+    "max_error_rate": 0.05,
+    "renames": {
+      "customerId": "customer_id"
+    }
   }
 }

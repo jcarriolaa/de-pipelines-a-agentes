@@ -46,8 +46,27 @@ def cargar_contrato(ruta: Path = CONTRATO) -> dict[str, Any]:
 
 
 def normalizar_registro(registro: dict[str, Any], contrato: dict[str, Any]) -> dict[str, Any]:
-    """Ajusta un registro a los nombres y formatos del contrato, antes de validar."""
-    return dict(registro)
+    """Ajusta un registro a los nombres y formatos del contrato, antes de validar.
+
+    Aplica el mapeo declarativo ``x-pipeline.renames`` (alias → nombre_contrato).
+    Si el registro trae ambos nombres, gana el del contrato (se descarta el alias).
+    Corre ANTES de validar y de tokenizar PII, de modo que los campos renombrados
+    se validan y se tokenicen exactamente igual que el campo original.
+    """
+    renames: dict[str, str] = contrato.get("x-pipeline", {}).get("renames", {})
+    if not renames:
+        return dict(registro)
+
+    salida = dict(registro)
+    for alias, nombre_contrato in renames.items():
+        if alias in salida:
+            if nombre_contrato not in salida:
+                # El campo llegó solo con el alias: renombrarlo
+                salida[nombre_contrato] = salida.pop(alias)
+            else:
+                # Llegaron los dos; gana el nombre del contrato, descarta el alias
+                del salida[alias]
+    return salida
 
 
 def motivos_de_rechazo(registro: dict[str, Any], contrato: dict[str, Any]) -> list[str]:
