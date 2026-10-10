@@ -16,19 +16,33 @@ else
 fi
 
 say "Siguiendo $GROUP (runtime: ${RUNTIME:-?})"
-# Las líneas del agente son JSON; jq las vuelve legibles en el proyector.
-aws logs tail "$GROUP" --follow --since "$SINCE" --format short \
-  | while IFS= read -r line; do
-      json="${line#* }"
-      if pretty="$(jq -r '
-          if .event == "tool_use" then "🔧 \(.tool): \(.input.command // .input | tostring | .[0:220])"
-          elif .event == "tool_result" then "   ↳ \(if .ok then "ok" else "DENEGADO/ERROR" end) \(.preview[0:160])"
-          elif .event == "agent_text" then "💭 \(.text[0:400])"
-          elif .event == "agent_start" then "🚨 agente despierto · \(.model) · max_turns=\(.max_turns) · budget=$\(.max_budget_usd)"
-          elif .event == "agent_result" then "✅ diagnóstico · \(.num_turns) turnos · \(.wall_clock_s)s · $\(.total_cost_usd) · publicado por \(.published_by)\n\(.diagnosis | tostring)"
-          else empty end' <<<"$json" 2>/dev/null)" && [[ -n "$pretty" ]]; then
-        echo "$pretty"
-      else
-        echo "$line"
-      fi
-    done
+echo "   esperando eventos… (Ctrl+C para salir)"
+
+# Consulta cada 3 s en vez de `aws logs tail --follow`: con un pipe, el CLI
+# guarda la salida en buffer y las líneas llegan tarde o en bloque.
+MINUTES="${SINCE%m}"
+LAST=$(( ($(date +%s) - ${MINUTES:-15} * 60) * 1000 ))
+while :; do
+  OUT="$(aws logs filter-log-events --log-group-name "$GROUP" --start-time "$LAST" --output json 2>/dev/null || echo '{}')"
+  NEW_LAST="$(jq -r '[.events[]?.timestamp] | max // empty' <<<"$OUT")"
+  jq -r '.events[]?.message' <<<"$OUT" | while IFS= read -r line; do
+    if pretty="$(jq -r '
+        if .event == "tool_use" then "🔧 \(.tool): \(.input.command // .input.file_path // (.input | tostring) | .[0:200])"
+        elif .event == "tool_result" then "   ↳ \(if .ok then "ok" else "⛔ DENEGADO / ERROR" end) \(.preview[0:140])"
+        elif .event == "agent_text" then "💭 \(.text[0:300])"
+        elif .event == "agent_start" then "\n🚨 AGENTE DESPIERTO · \(.model) · max_turns=\(.max_turns) · budget=$\(.max_budget_usd)"
+        elif .event == "repo_ready" then "📦 repo clonado en rama \(.branch)"
+        elif .event == "pr_opened" then "\n📬 DRAFT PR ABIERTO: \(.url)"
+        elif .event == "published" then "📧 correo enviado"
+        elif .event == "agent_result" then "\n✅ LISTO · \(.num_turns) turnos · \(.wall_clock_s) s · $\(.total_cost_usd)\n   causa: \(.diagnosis.causa)"
+        elif .event == "agent_error" then "❌ \(.error[0:300])"
+        elif .event == "dispatch" or .dispatch then "📨 dispatcher → \(.dispatch // "")"
+        else empty end' <<<"$line" 2>/dev/null)"; then
+      [[ -n "$pretty" ]] && echo "$pretty"
+    elif [[ "$GROUP" == /aws/lambda/* ]]; then
+      echo "$line"
+    fi
+  done
+  [[ -n "$NEW_LAST" ]] && LAST=$(( NEW_LAST + 1 ))
+  sleep 3
+done
