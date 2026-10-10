@@ -38,11 +38,11 @@ while :; do
         elif .event == "agent_error" then "❌ \(.error[0:300])"
         elif .event == "dispatch" or .dispatch then "📨 dispatcher → \(.dispatch // "")"
         else empty end' <<<"$line" 2>/dev/null)"; then
-      [[ -n "$pretty" ]] && echo "$pretty"
+      if [[ -n "$pretty" ]]; then echo "$pretty"; fi
     elif [[ "$GROUP" == /aws/lambda/* ]]; then
       echo "$line"
     fi
-  done
-  [[ -n "$NEW_LAST" ]] && LAST=$(( NEW_LAST + 1 ))
+  done || true   # el monitor nunca se cae: una línea rara no lo detiene
+  if [[ -n "$NEW_LAST" ]]; then LAST=$(( NEW_LAST + 1 )); fi
   sleep 3
 done
