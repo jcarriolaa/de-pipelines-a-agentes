@@ -1,6 +1,6 @@
 import pytest
 
-from eventos.validacion import CalidadError, cargar_contrato, validar_lote
+from eventos.validacion import CalidadError, cargar_contrato, normalizar_registro, validar_lote
 
 CONTRATO = cargar_contrato()
 
@@ -34,3 +34,23 @@ def test_falta_campo_requerido_tumba_el_gate():
 def test_campo_inesperado_se_reporta():
     reporte = validar_lote([evento(extra="x")], CONTRATO)
     assert reporte.campos_inesperados == ["extra"]
+
+
+def test_rename_customerid_a_customer_id_valida_y_tokeniza():
+    """El CRM envía customerId; el pipeline lo renombra a customer_id antes de
+    validar y de tokenizar, por lo que el campo PII no viaja en claro."""
+    registro_crm = evento(customer_id=..., customerId="cust-000099")
+    reporte = validar_lote([registro_crm], CONTRATO)
+    assert len(reporte.validos) == 1
+    valido = reporte.validos[0]
+    assert "customer_id" in valido, "el campo renombrado debe aparecer como customer_id"
+    assert "customerId" not in valido, "el alias no debe sobrevivir al normalizar"
+    assert valido["customer_id"] != "cust-000099", "el PII debe quedar tokenizado, no en claro"
+
+
+def test_rename_gana_nombre_canonico_cuando_llegan_ambos():
+    """Si un registro trae customer_id y customerId a la vez, gana customer_id."""
+    registro = evento(customerId="cust-ALIAS")  # también tiene customer_id del base
+    normalizado = normalizar_registro(registro, CONTRATO)
+    assert normalizado["customer_id"] == "cust-000012"
+    assert "customerId" not in normalizado

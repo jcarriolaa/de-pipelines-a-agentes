@@ -46,8 +46,23 @@ def cargar_contrato(ruta: Path = CONTRATO) -> dict[str, Any]:
 
 
 def normalizar_registro(registro: dict[str, Any], contrato: dict[str, Any]) -> dict[str, Any]:
-    """Ajusta un registro a los nombres y formatos del contrato, antes de validar."""
-    return dict(registro)
+    """Ajusta un registro a los nombres y formatos del contrato, antes de validar.
+
+    Aplica el mapeo declarativo de `x-pipeline.renames`: renombra cada campo de
+    entrada al nombre canónico del contrato. Si el registro trae los dos nombres
+    (el viejo y el canónico), gana el canónico (no se sobreescribe).
+    """
+    renames: dict[str, str] = contrato.get("x-pipeline", {}).get("renames", {})
+    if not renames:
+        return dict(registro)
+    salida = dict(registro)
+    for nombre_entrada, nombre_contrato in renames.items():
+        if nombre_entrada in salida and nombre_contrato not in salida:
+            salida[nombre_contrato] = salida.pop(nombre_entrada)
+        elif nombre_entrada in salida:
+            # el campo canónico ya existe: descartamos el alias
+            del salida[nombre_entrada]
+    return salida
 
 
 def motivos_de_rechazo(registro: dict[str, Any], contrato: dict[str, Any]) -> list[str]:
