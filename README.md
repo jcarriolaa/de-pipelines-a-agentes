@@ -32,6 +32,7 @@ El agente propone; tú decides.
 | `agent/` | El agente: `main.py` (runtime + loop con Claude Agent SDK), `runbook.md` (sus instrucciones) y `Dockerfile` (imagen arm64 para AgentCore). |
 | `infra/` | Terraform: regla de EventBridge, Lambda dispatcher, AgentCore Runtime (y Fargate de respaldo), IAM, SNS y secretos. |
 | `demo/` | Scripts de la demo: romper el contrato, correr el pipeline, ver al agente en vivo. |
+| `docs/agentes/` | Las fichas de los tres agentes del equipo: [desarrollo](docs/agentes/desarrollo.md), [calidad](docs/agentes/calidad.md) y [monitoreo](docs/agentes/monitoreo.md). |
 
 ## Probar el contrato y la validación
 
