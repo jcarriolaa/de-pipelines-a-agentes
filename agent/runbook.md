@@ -101,7 +101,8 @@ es un **cambio de schema upstream** (un campo renombrado), implementa un arreglo
    registro trae los dos nombres, gana el del contrato.
 4. Agrega un test en `tests/test_validacion.py` que pruebe el renombre (incluido que el valor
    queda tokenizado).
-5. Corre `python -m pytest -q` y verifica que todo pase. Revisa tu cambio con `git diff`.
+5. Corre exactamente `python -m pytest -q` (sin variables ni redirecciones; el repo ya resuelve
+   las rutas) y verifica que todo pase. Revisa tu cambio con `git diff`.
 6. Solo puedes editar `contracts/`, `src/` y `tests/` (el runtime bloquea el PR si tocas otra cosa).
 
 Si la causa NO es un cambio de schema, no edites nada.

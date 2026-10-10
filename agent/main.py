@@ -101,6 +101,7 @@ REPO_EDIT_TOOLS = [
     "Bash(git diff*)",
     "Bash(git status*)",
     "Bash(python -m pytest*)",
+    "Bash(PYTHONPATH=src python -m pytest*)",
 ]
 
 DIAGNOSIS_SCHEMA: dict[str, Any] = {
@@ -200,7 +201,8 @@ def provider_env() -> dict[str, str]:
 
 def build_options(repo: Path | None) -> ClaudeAgentOptions:
     allowed = ["Read", "Grep", "Glob", *AWS_READ_TOOLS, *(REPO_EDIT_TOOLS if repo else [])]
-    disallowed = ["NotebookEdit", "WebFetch", "WebSearch"] + ([] if repo else ["Write", "Edit"])
+    # Sin subagentes: si algo se le niega, que no intente pedírselo a otro agente.
+    disallowed = ["Agent", "Task", "NotebookEdit", "WebFetch", "WebSearch"] + ([] if repo else ["Write", "Edit"])
     return ClaudeAgentOptions(
         system_prompt=load_runbook(),
         model=MODEL_ID,
