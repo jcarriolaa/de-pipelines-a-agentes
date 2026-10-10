@@ -102,3 +102,15 @@ variable "anthropic_model_id" {
   type        = string
   default     = "claude-sonnet-4-6"
 }
+
+variable "flujo_programado" {
+  description = "Enciende el productor del CRM (eventos válidos + ejecución del pipeline cada flujo_cada_minutos)."
+  type        = bool
+  default     = false
+}
+
+variable "flujo_cada_minutos" {
+  description = "Cada cuántos minutos manda datos el productor. El pipeline tarda ~8 min: no bajar de 10."
+  type        = number
+  default     = 10
+}

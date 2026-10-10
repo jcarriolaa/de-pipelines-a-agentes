@@ -9,6 +9,7 @@ infra/terraform.tfstate*
 infra/terraform.tfvars
 infra/*.tfplan
 infra/.image_tag
+infra/.flujo
 
 # configuración local de herramientas (no se versiona)
 .claude/

@@ -6,10 +6,12 @@ AWS_REGION  ?= us-east-1
 TAG         ?= $(shell date +%Y%m%d-%H%M%S)
 TERRAFORM   ?= $(shell command -v terraform || echo $(HOME)/.local/bin/terraform)
 TF          := $(TERRAFORM) -chdir=infra
+# El estado del flujo programado se recuerda en infra/.flujo para que `make apply` no lo apague.
+TF_VARS      = -var="image_tag=$$(cat infra/.image_tag)" -var="flujo_programado=$$(cat infra/.flujo 2>/dev/null || echo false)"
 export AWS_PROFILE AWS_REGION
 
 .PHONY: help login check-bedrock build dry-run smoke-agentcore-local infra-init infra-ecr push apply \
-        runtime-fargate runtime-agentcore invoke-test validate happy reset break run watch destroy
+        runtime-fargate runtime-agentcore invoke-test validate happy reset break run watch destroy flujo-on flujo-off flujo-ahora
 
 help: ## Esta ayuda
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-24s %s\n", $$1, $$2}'
@@ -56,13 +58,13 @@ push: build ## Sube la imagen a ECR con tag fecha-hora y lo guarda en infra/.ima
 	@echo "IMAGE=$(REPO):$(TAG)"
 
 apply: infra-init ## Todo el addon (AgentCore + respaldo Fargate + EventBridge + SNS)
-	$(TF) apply -var="image_tag=$$(cat infra/.image_tag)"
+	$(TF) apply $(TF_VARS)
 
 runtime-fargate: ## PLAN B en AWS: el dispatcher pasa a Fargate (mismo agente)
-	$(TF) apply -var="image_tag=$$(cat infra/.image_tag)" -var="agent_runtime=fargate"
+	$(TF) apply $(TF_VARS) -var="agent_runtime=fargate"
 
 runtime-agentcore: ## Volver a AgentCore
-	$(TF) apply -var="image_tag=$$(cat infra/.image_tag)" -var="agent_runtime=agentcore"
+	$(TF) apply $(TF_VARS) -var="agent_runtime=agentcore"
 
 invoke-test: ## Invoca el dispatcher con el evento de ejemplo (prueba del cableado, sin romper el pipeline)
 	aws lambda invoke --function-name $$($(TF) output -raw dispatcher_function_name) \
@@ -85,4 +87,15 @@ watch: ## Logs del agente en vivo
 	./demo/watch_agent.sh
 
 destroy: ## Destruye la infra del agente (no toca el pipeline)
-	$(TF) destroy -var="image_tag=$$(cat infra/.image_tag)"
+	$(TF) destroy $(TF_VARS)
+
+flujo-on: ## Enciende el productor del CRM: datos válidos + pipeline cada 10 min
+	@echo true > infra/.flujo
+	$(TF) apply $(TF_VARS)
+
+flujo-off: ## Apaga el productor del CRM
+	@echo false > infra/.flujo
+	$(TF) apply $(TF_VARS)
+
+flujo-ahora: ## Dispara el productor una vez, sin esperar al schedule
+	aws lambda invoke --function-name demo-agent-productor-crm --cli-binary-format raw-in-base64-out /dev/stdout
